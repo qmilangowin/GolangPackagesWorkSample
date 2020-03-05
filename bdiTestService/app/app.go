@@ -30,12 +30,17 @@ type FileNameInfo struct {
 	Error             error
 }
 
+//Server ... server struct
+type Server struct {
+	Router *mux.Router
+}
+
 var configurations = make(map[string]ConfigurationInfo)
 var mutex = &sync.Mutex{}
 var doOnce sync.Once
 
 //Initialize .... initializes the server when first run to create default config
-func Initialize() {
+func (s *Server) Initialize() {
 
 	doOnce.Do(func() {
 		sourcefolder = "/home/data"
@@ -49,7 +54,7 @@ func Initialize() {
 //---------------------routes
 
 //ShowFilesRoute ... route
-func ShowFilesRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ShowFilesRoute(w http.ResponseWriter, r *http.Request) {
 
 	fileList := make(map[string][]string)
 	w.Header().Set("Content-Type", "application/json")
@@ -71,7 +76,7 @@ func ShowFilesRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 //ShowConfigurationByIdRoute ... route
-func ShowConfigurationByIdRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ShowConfigurationByIdRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	configId := mux.Vars(r)["configId"]
@@ -85,14 +90,14 @@ func ShowConfigurationByIdRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 //ShowAllConfigurationsRoute ... route
-func ShowAllConfigurationsRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ShowAllConfigurationsRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(configurations)
 }
 
 //CreateNewConfiguration ... route
-func CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -119,7 +124,7 @@ func CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 //DeleteConfigurationRoute ... route
-func DeleteConfigurationRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) DeleteConfigurationRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	configId := mux.Vars(r)["configId"]
@@ -137,7 +142,7 @@ func DeleteConfigurationRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 //SetFileNamesRoute ... route
-func SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
