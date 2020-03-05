@@ -34,11 +34,11 @@ var configurations = make(map[string]ConfigurationInfo)
 var mutex = &sync.Mutex{}
 var doOnce sync.Once
 
-//Initialize .... initializes the server when first run
+//Initialize .... initializes the server when first run to create default config
 func Initialize() {
 
 	doOnce.Do(func() {
-		sourcefolder = "/Users/igo/Desktop/Repos/Golang/Projects/Work/BDI/restAPIdev/cmd/data" //debug - change to /home/data
+		sourcefolder = "/home/data"
 		dataset = "hacker"
 		configuration := ConfigurationInfo{SourceFolder: sourcefolder, DatasetName: dataset}
 		configurations["default"] = configuration
