@@ -1,10 +1,12 @@
 package main
 
 import (
-	"Repos/BDI_Service/bdiTestService/app"
 	"log"
 	"net/http"
 	"time"
+
+	//"github.com/qmilangowin/oxpcker-tools/bdiTestService/app"
+	"github.com/qmilangowin/GolangPackages/bdiTestService/app" //for test purposes - remove afterwards
 
 	"github.com/gorilla/mux"
 )
