@@ -30,7 +30,7 @@ type FileNameInfo struct {
 	Error             error
 }
 
-//Server ... server struct
+//Server ... defined as struct
 type Server struct {
 	Router *mux.Router
 }
@@ -50,6 +50,9 @@ func (s *Server) Initialize() {
 
 	})
 }
+
+//Run ... run's server for unit testing.
+func (s *Server) Run(addr string) {}
 
 //---------------------routes
 
@@ -112,12 +115,7 @@ func (s *Server) CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Requ
 	}
 
 	json.Unmarshal(reqBody, &configuration)
-	if configId > 1 {
-		configurations[configIdStr] = configurations["latest"]
-		configurations["latest"] = configuration
-	} else {
-		configurations["latest"] = configuration
-	}
+	configurations[configIdStr] = configuration
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(configurations)
 
