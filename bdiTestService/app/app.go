@@ -13,7 +13,6 @@ import (
 )
 
 var configId int
-var path string
 var sourcefolder string
 var dataset string
 
@@ -27,17 +26,38 @@ type ConfigurationInfo struct {
 type FileNameInfo struct {
 	FileNamesOriginal string `json:"oldFileName"`
 	FileNamesNew      string `json:"newFileName"`
+	SourceFolder      string
 	Error             error
 }
 
 //Server ... defined as struct
 type Server struct {
-	Router *mux.Router
+	Router  *mux.Router
+	Mutex   sync.Mutex
+	RwMutex sync.RWMutex
+}
+
+//LogWriter ... to printout logs to http.ResponseWriter
+type LogWriter struct {
+	http.ResponseWriter
+}
+
+//Error ... to printout string representation of errors
+type Error interface {
+	Error() string
 }
 
 var configurations = make(map[string]ConfigurationInfo)
-var mutex = &sync.Mutex{}
 var doOnce sync.Once
+
+//LogWriter ... to log out http.ResponseWriter errors
+func (w LogWriter) Write(p []byte) (n int, err error) {
+	n, err = w.ResponseWriter.Write(p)
+	if err != nil {
+		log.Printf("Error: %v", err)
+	}
+	return
+}
 
 //Initialize .... initializes the server when first run to create default config
 func (s *Server) Initialize() {
@@ -59,21 +79,23 @@ func (s *Server) Run(addr string) {}
 //ShowFilesRoute ... route
 func (s *Server) ShowFilesRoute(w http.ResponseWriter, r *http.Request) {
 
-	fileList := make(map[string][]string)
 	w.Header().Set("Content-Type", "application/json")
+	fileList := make(map[string][]string)
 	configId := mux.Vars(r)["configId"]
 	if value, ok := configurations[configId]; ok {
-		files, err := GetFiles(value.SourceFolder)
+		files, err := s.GetFiles(value.SourceFolder)
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
+			w = LogWriter{w}
+			w.Write([]byte(err.Error()))
 			return
 		}
 		fileList["files"] = files
 		json.NewEncoder(w).Encode(fileList)
-		return
+
 	} else {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+
 	}
 
 }
@@ -85,10 +107,10 @@ func (s *Server) ShowConfigurationByIdRoute(w http.ResponseWriter, r *http.Reque
 	configId := mux.Vars(r)["configId"]
 	if value, ok := configurations[configId]; ok {
 		json.NewEncoder(w).Encode(value)
-		return
+
 	} else {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+
 	}
 }
 
@@ -103,7 +125,6 @@ func (s *Server) ShowAllConfigurationsRoute(w http.ResponseWriter, r *http.Reque
 func (s *Server) CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
-
 	var configuration ConfigurationInfo
 	configId++
 	configIdStr := strconv.Itoa(configId)
@@ -111,6 +132,8 @@ func (s *Server) CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Requ
 
 	if err != nil {
 		fmt.Fprintf(w, "Cannot Create Configuration")
+		w = LogWriter{w}
+		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -129,12 +152,12 @@ func (s *Server) DeleteConfigurationRoute(w http.ResponseWriter, r *http.Request
 
 	if configId == "default" {
 		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
+
 	} else {
 		delete(configurations, configId)
 		w.WriteHeader(http.StatusAccepted)
 		json.NewEncoder(w).Encode(configurations)
-		return
+
 	}
 
 }
@@ -143,6 +166,14 @@ func (s *Server) DeleteConfigurationRoute(w http.ResponseWriter, r *http.Request
 func (s *Server) SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
+	configId := mux.Vars(r)["configId"]
+	var sourceFolder string
+
+	if value, ok := configurations[configId]; ok {
+		sourceFolder = value.SourceFolder
+	} else {
+		fmt.Println("error")
+	}
 
 	var fileList []FileNameInfo
 	body, err := ioutil.ReadAll(r.Body)
@@ -160,21 +191,26 @@ func (s *Server) SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for index := range fileList {
+		fileList[index].SourceFolder = sourceFolder
+	}
+
 	c := make(chan FileNameInfo)
 
 	for _, file := range fileList {
 
-		go RenameFiles(file, c)
+		go s.RenameFiles(file, c)
 
 	}
 
 	renamedFiles := <-c
 	if renamedFiles.Error != nil {
 		http.Error(w, "Couldn't rename - Check path, file names", http.StatusBadRequest)
+
 	} else {
 
 		http.Error(w, "Filenames changed", http.StatusOK)
-		return
+
 	}
 
 }
