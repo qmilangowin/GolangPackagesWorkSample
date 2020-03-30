@@ -1,0 +1,13 @@
+FROM golang:alpine AS builder
+WORKDIR /app/bdi-test-service
+COPY . .
+RUN go mod download
+WORKDIR /app/bdi-test-service
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o bdi_test_service
+RUN rm server.go
+WORKDIR /app/bdi-test-service/
+RUN rm -rf app && rm -rf tests && rm Dockerfile && rm docker-compose.yml && rm go.mod && rm go.sum && rm README.md
+RUN mkdir /home/data
+WORKDIR /app/bdi-test-service
+EXPOSE 8081
+CMD ["./bdi_test_service"]

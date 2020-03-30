@@ -12,9 +12,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var configId int
-var sourcefolder string
-var dataset string
+var (
+	configId     int
+	sourcefolder string
+	dataset      string
+)
 
 //ConfigurationInfo ... FileName as JSON description
 type ConfigurationInfo struct {
@@ -40,11 +42,6 @@ type Server struct {
 //LogWriter ... to printout logs to http.ResponseWriter
 type LogWriter struct {
 	http.ResponseWriter
-}
-
-//Error ... to printout string representation of errors
-type Error interface {
-	Error() string
 }
 
 var configurations = make(map[string]ConfigurationInfo)
@@ -183,9 +180,9 @@ func (s *Server) SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err1 := json.Unmarshal([]byte(body), &fileList)
+	err = json.Unmarshal([]byte(body), &fileList)
 
-	if err1 != nil {
+	if err != nil {
 		log.Printf("Cannot unmarshal")
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return

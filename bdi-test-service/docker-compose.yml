@@ -1,0 +1,9 @@
+bdi_test-service:
+  image: qlik/bdi-test-service
+  privileged: true
+  volumes:
+      - ~/home/data:/home/data
+  ports:
+    - "8081:8081"
+
+
