@@ -2,5 +2,5 @@
 ## Golang Packages for import
 
 ### bdi-test-service
-RESTful micro-service for use with Qlik BDI service for test-automation purposes. No proprietary info.
+RESTful micro-service for use with Qlik BDI service for test-automation purposes. No proprietary info. Ok to make public
 
