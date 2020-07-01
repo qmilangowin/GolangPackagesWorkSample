@@ -1,7 +1,7 @@
 package app_test
 
 import (
-	"bdi-test-service/app"
+	"bdi-test-service/handlers"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,15 +11,21 @@ import (
 
 func TestShowAllConfigurations(t *testing.T) {
 
-	server := app.Server{}
+	handlers.Sourcepath = "/home/data/stories.table/stories.parquet"
+	handlers.Dataset = "hacker"
+	server := handlers.Server{}
 	server.Initialize()
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/sta/v1/bdi_test_service/configurations", nil)
+	r, err := http.NewRequest(http.MethodGet, "/sta/v1/bdi_test_service/configurations", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	handler := http.HandlerFunc(server.ShowAllConfigurationsRoute)
-	handler.ServeHTTP(w, r)
-
+	server.ShowAllConfigurationsRoute(w, r)
 	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("WANT %d; GOT %d", http.StatusOK, resp.StatusCode)
+	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 
@@ -33,19 +39,26 @@ func TestShowAllConfigurations(t *testing.T) {
 
 func TestCreateNewConfiguration(t *testing.T) {
 
-	app := app.Server{}
-	app.Initialize()
+	handlers := handlers.Server{}
+	handlers.Initialize()
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPatch, "/sta/v1/bdi_test_service/configurations", nil)
-	app.CreateNewConfigurationRoute(w, r)
+	bodyReader := strings.NewReader(`{"sourcefolder": "/home/data", "datasetname": "tpch10"}`)
+	r, err := http.NewRequest(http.MethodPatch, "/sta/v1/bdi_test_service/configurations", bodyReader)
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	handlers.CreateNewConfigurationRoute(w, r)
 	resp := w.Result()
+	if resp.StatusCode != 202 {
+		t.Errorf("WANT %d; GOT %d", 202, resp.StatusCode)
+	}
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	got := strings.TrimSpace(string(body))
-	want := `{"1":{"sourcefolder":"","datasetname":""},"default":{"sourcefolder":"/home/data/stories.table/stories.parquet","datasetname":"hacker"}}`
+	want := `{"1":{"sourcefolder":"/home/data","datasetname":"tpch10"},"default":{"sourcefolder":"/home/data/stories.table/stories.parquet","datasetname":"hacker"}}`
 	if got != want {
 		t.Errorf("PATCH to CreateNewConfigurationRoute: GOT: %s WANT: %s", got, want)
 	}

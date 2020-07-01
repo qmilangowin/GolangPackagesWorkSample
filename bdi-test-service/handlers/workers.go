@@ -1,8 +1,8 @@
-package app
+//Package handlers ... workers
+package handlers
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,7 +15,8 @@ func (s *Server) GetFiles(sourceFolder string) ([]string, error) {
 	s.RwMutex.Lock()
 	files, err := ioutil.ReadDir(sourceFolder)
 	if err != nil {
-		fmt.Println("File doesn't exist")
+
+		log.Errorlog.Println(err.Error())
 	}
 	for _, file := range files {
 
@@ -38,10 +39,37 @@ func (s *Server) RenameFiles(files FileNameInfo, c chan FileNameInfo) {
 	err := os.Rename(originalFileName, newFileName)
 	if err != nil {
 		files.Error = errors.New("Bad Request")
+		log.Errorlog.Println(err.Error())
 	}
 
 	s.Mutex.Unlock()
 
 	c <- files
 
+}
+
+//RemoveFiles ... removes indexed files from default output directory
+func (s *Server) RemoveFiles(dir string) error {
+
+	d, err := os.Open(dir)
+	if err != nil {
+		log.Errorlog.Println(err.Error())
+		return err
+	}
+
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		log.Errorlog.Println(err.Error())
+	}
+	s.Mutex.Lock()
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			log.Errorlog.Println(err.Error())
+		}
+	}
+	s.Mutex.Unlock()
+
+	return nil
 }
