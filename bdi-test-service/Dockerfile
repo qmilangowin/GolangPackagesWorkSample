@@ -1,13 +1,33 @@
 FROM golang:alpine AS builder
-WORKDIR /app/bdi-test-service
+
+# Set necessary environmet variables needed for our image
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+#set directory to map datasets
+RUN mkdir /home/data
+# create a build directory
+WORKDIR /build
+
+# Copy and download dependency using go mod
 COPY . .
 RUN go mod download
-WORKDIR /app/bdi-test-service
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o bdi_test_service
-RUN rm server.go
-WORKDIR /app/bdi-test-service/
-RUN rm -rf app && rm -rf tests && rm Dockerfile && rm docker-compose.yml && rm go.mod && rm go.sum && rm README.md
-RUN mkdir /home/data
-WORKDIR /app/bdi-test-service
+
+# Build the service
+RUN go build -o bdi-test-service .
+
+# Move to /dist directory as the place for resulting binary folder
+WORKDIR /dist
+
+# Copy binary from build to main folder
+RUN cp /build/bdi-test-service .
+
+# Build a small image
+FROM scratch
+
+COPY --from=builder /dist/bdi-test-service /
 EXPOSE 8081
-CMD ["./bdi_test_service"]
+# Command to run
+ENTRYPOINT ["/bdi-test-service"]

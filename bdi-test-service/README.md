@@ -25,8 +25,8 @@ The following endpoints are available:
 *List all configurations*
 
 ```
-# GET /v1/bdi_test_service/configurations
-curl https://<bd-test-service-address>/v1/bdi_test_service/configurations
+# GET /sta/v1/bdi_test_service/configurations
+curl https://<bd-test-service-address>/sta/v1/bdi_test_service/configurations
 ```
 
 ```
@@ -44,8 +44,8 @@ Response Body:
 *Create new configuration*
 
 ```
-# PATCH /v1/bdi_test_service/configurations
-curl https://<bd-test-service-address>/v1/bdi_test_service/configurations
+# PATCH /sta/v1/bdi_test_service/configurations
+curl https://<bd-test-service-address>/sta/v1/bdi_test_service/configurations
 
 Request Body:
 
@@ -77,8 +77,8 @@ Response Body:
 Pass the configuration ID to the endpoint. For example passing ```latest``` to configID below will generate the following response
 
 ```
-# GET /v1/bdi_test_service/configurations/{configID}
-curl https://<bd-test-service-address>/v1/bdi_test_service/configurations/{configID}
+# GET /sta/v1/bdi_test_service/configurations/{configID}
+curl https://<bd-test-service-address>/sta/v1/bdi_test_service/configurations/{configID}
 ```
 ```
 Response: 200 OK
@@ -95,8 +95,8 @@ Response Body:
 Pass the configuration ID to the endpoint. DEFAULT configuration cannot be deleted.
 
 ```
-# DELETE /v1/bdi_test_service/configurations/{configID}
-curl https://<bd-test-service-address>/v1/bdi_test_service/configurations/{configID}
+# DELETE /sta/v1/bdi_test_service/configurations/{configID}
+curl https://<bd-test-service-address>/sta/v1/bdi_test_service/configurations/{configID}
 ```
 For example if deleting the ```latest``` configID, response will look as follows (with ```default``` remaining in below example):
 
@@ -116,8 +116,8 @@ Response Body:
 This will show all the files for a given configuration
 
 ```
-# GET /v1/bdi_test_service/configurations/{configID}/files
-curl https://<bd-test-service-address>/v1/bdi_test_service/configurations/{configID}/files
+# GET /sta/v1/bdi_test_service/configurations/{configID}/files
+curl https://<bd-test-service-address>/sta/v1/bdi_test_service/configurations/{configID}/files
 ```
 
 ```
@@ -137,8 +137,8 @@ Response Body:
 This will rename files for a given configuration. Pass as many filenames as needed.
 
 ```
-# PATCH /v1/bdi_test_service/configurations/{configID}/files
-curl https://<bd-test-service-address>/v1/bdi_test_service/configurations/{configID}/files
+# PATCH /sta/v1/bdi_test_service/configurations/{configID}/files
+curl https://<bd-test-service-address>/sta/v1/bdi_test_service/configurations/{configID}/files
 
 Request Body:
 

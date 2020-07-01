@@ -18,12 +18,15 @@ func main() {
 	app := app.Server{}
 	app.Initialize()
 	router := mux.NewRouter()
-	router.HandleFunc("/v1/bdi_test_service/configurations/{configId}/files", app.ShowFilesRoute).Methods("GET")
-	router.HandleFunc("/v1/bdi_test_service/configurations/{configId}", app.ShowConfigurationByIdRoute).Methods("GET")
-	router.HandleFunc("/v1/bdi_test_service/configurations", app.ShowAllConfigurationsRoute).Methods("GET")
-	router.HandleFunc("/v1/bdi_test_service/configurations", app.CreateNewConfigurationRoute).Methods("PATCH")
-	router.HandleFunc("/v1/bdi_test_service/configurations/{configId}", app.DeleteConfigurationRoute).Methods("DELETE")
-	router.HandleFunc("/v1/bdi_test_service/configurations/{configId}/files", app.SetFileNamesRoute).Methods("PATCH")
+	router.HandleFunc("/sta/v1/bdi_test_service/configurations/{configId}/files", app.ShowFilesRoute).Methods("GET")
+	router.HandleFunc("/sta/v1/bdi_test_service/configurations/{configId}", app.ShowConfigurationByIdRoute).Methods("GET")
+	router.HandleFunc("/sta/v1/bdi_test_service/configurations", app.ShowAllConfigurationsRoute).Methods("GET")
+	router.HandleFunc("/sta/v1/bdi_test_service/configurations", app.CreateNewConfigurationRoute).Methods("PATCH")
+	router.HandleFunc("/sta/v1/bdi_test_service/configurations/{configId}", app.DeleteConfigurationRoute).Methods("DELETE")
+	router.HandleFunc("/sta/v1/bdi_test_service/configurations/{configId}/files", app.SetFileNamesRoute).Methods("PATCH")
+	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "bdi-test-service: Bad Request - Check your path", http.StatusBadRequest)
+	})
 
 	srv := &http.Server{
 		Handler:      router,
@@ -32,7 +35,7 @@ func main() {
 		ReadTimeout:  20 * time.Second,
 	}
 
-	//start the server
+	//sta/v1rt the server
 	go func() {
 		l.Println("Starting server on port: 8081")
 		err := srv.ListenAndServe()

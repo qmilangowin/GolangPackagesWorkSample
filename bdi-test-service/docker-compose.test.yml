@@ -1,0 +1,9 @@
+bdi_test-service:
+  image: qliktech-docker-infrastructure.jfrog.io/bdi-test-service:${VER}
+  privileged: true
+  volumes:
+      - ~/home/data:/home/data
+  ports:
+    - "8081:8081"
+
+

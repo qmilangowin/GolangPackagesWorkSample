@@ -60,7 +60,7 @@ func (w LogWriter) Write(p []byte) (n int, err error) {
 func (s *Server) Initialize() {
 
 	doOnce.Do(func() {
-		sourcefolder = "/home/data"
+		sourcefolder = "/home/data/stories.table/stories.parquet"
 		dataset = "hacker"
 		configuration := ConfigurationInfo{SourceFolder: sourcefolder, DatasetName: dataset}
 		configurations["default"] = configuration
@@ -106,7 +106,7 @@ func (s *Server) ShowConfigurationByIdRoute(w http.ResponseWriter, r *http.Reque
 		json.NewEncoder(w).Encode(value)
 
 	} else {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "Bad Request - route does not exist", http.StatusBadRequest)
 
 	}
 }
@@ -116,6 +116,7 @@ func (s *Server) ShowAllConfigurationsRoute(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(configurations)
+
 }
 
 //CreateNewConfiguration ... route
