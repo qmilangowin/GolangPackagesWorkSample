@@ -5,5 +5,3 @@ bdi_test-service:
       - ~/home/data:/home/data
   ports:
     - "8081:8081"
-
-

@@ -161,3 +161,17 @@ Response Body:
 Filenames changed
 ```
 
+*Delete output*
+
+Delete the out.
+
+```
+# DELETE /sta/v1/bdi_test_service/configurations/{configID}/output
+curl https://<bd-test-service-address>/sta/v1/bdi_test_service/configurations/{configID}/output
+```
+Will delete the output folder in a bdi-cluster:
+
+```
+Response: 202 Accepted
+
+```

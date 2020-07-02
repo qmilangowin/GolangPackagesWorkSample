@@ -61,12 +61,14 @@ func (s *Server) RemoveFiles(dir string) error {
 	names, err := d.Readdirnames(-1)
 	if err != nil {
 		log.Errorlog.Println(err.Error())
+		return err
 	}
 	s.Mutex.Lock()
 	for _, name := range names {
 		err = os.RemoveAll(filepath.Join(dir, name))
 		if err != nil {
 			log.Errorlog.Println(err.Error())
+			return err
 		}
 	}
 	s.Mutex.Unlock()

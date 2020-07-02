@@ -73,6 +73,7 @@ func (s *Server) ShowConfigurationByIDRoute(w http.ResponseWriter, r *http.Reque
 		json.NewEncoder(w).Encode(value)
 
 	} else {
+
 		http.Error(w, "Bad Request - route does not exist", http.StatusBadRequest)
 
 	}
@@ -91,6 +92,7 @@ func (s *Server) ShowFilesRoute(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Bad Request - no such file/directory", http.StatusBadRequest)
 			return
 		}
+
 		fileList["files"] = files
 		json.NewEncoder(w).Encode(fileList)
 
@@ -186,7 +188,7 @@ func (s *Server) SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = json.Unmarshal([]byte(body), &fileList)
+	err = json.Unmarshal(body, &fileList)
 
 	if err != nil {
 		log.Errorlog.Printf("Cannot unmarshal")
