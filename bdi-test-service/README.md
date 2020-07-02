@@ -163,7 +163,7 @@ Filenames changed
 
 *Delete output*
 
-Delete the out.
+Delete the output folder.
 
 ```
 # DELETE /sta/v1/bdi_test_service/configurations/{configID}/output
