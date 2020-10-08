@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bdi-test-service/config"
 	"bdi-test-service/handlers"
+	logger "bdi-test-service/logging"
 	"context"
 	"flag"
 	"net/http"
@@ -45,15 +45,12 @@ func main() {
 		ReadTimeout:  20 * time.Second,
 	}
 
-	//setup logging for the server
-	log := config.Logger()
-
 	//start the server
 	go func() {
-		log.Infolog.Printf("Starting server on: %s", *addr)
+		logger.Info("Starting server on: %s", *addr)
 		err := srv.ListenAndServe()
 		if err != nil {
-			log.Errorlog.Fatal(err)
+			logger.Errorfatal(err)
 		}
 	}()
 
@@ -62,7 +59,7 @@ func main() {
 	signal.Notify(sigChan, os.Kill)
 
 	sig := <-sigChan
-	log.Infolog.Println("Received terminate, graceful shutdown", sig)
+	logger.Info("Received terminate, graceful shutdown %s", sig)
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	srv.Shutdown(tc)
 }

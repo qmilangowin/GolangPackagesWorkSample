@@ -2,6 +2,8 @@
 package handlers
 
 import (
+	logger "bdi-test-service/logging"
+	"context"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -16,7 +18,7 @@ func (s *Server) GetFiles(sourceFolder string) ([]string, error) {
 	files, err := ioutil.ReadDir(sourceFolder)
 	if err != nil {
 
-		log.Errorlog.Println(err.Error())
+		logger.Errorln(err.Error())
 	}
 	for _, file := range files {
 
@@ -39,7 +41,7 @@ func (s *Server) RenameFiles(files FileNameInfo, c chan FileNameInfo) {
 	err := os.Rename(originalFileName, newFileName)
 	if err != nil {
 		files.Error = errors.New("Bad Request")
-		log.Errorlog.Println(err.Error())
+		logger.Error(err.Error())
 	}
 
 	s.Mutex.Unlock()
@@ -49,29 +51,44 @@ func (s *Server) RenameFiles(files FileNameInfo, c chan FileNameInfo) {
 }
 
 //RemoveFiles ... removes indexed files from default output directory
-func (s *Server) RemoveFiles(dir string) error {
+func (s *Server) RemoveFiles(ctx context.Context, dir string) error {
+
+	done := make(chan bool)
 
 	d, err := os.Open(dir)
 	if err != nil {
-		log.Errorlog.Println(err.Error())
+		logger.Errorln(err.Error())
 		return err
 	}
 
 	defer d.Close()
 	names, err := d.Readdirnames(-1)
 	if err != nil {
-		log.Errorlog.Println(err.Error())
+		logger.Errorln(err.Error())
 		return err
 	}
-	s.Mutex.Lock()
-	for _, name := range names {
-		err = os.RemoveAll(filepath.Join(dir, name))
-		if err != nil {
-			log.Errorlog.Println(err.Error())
-			return err
+	go func() (error, chan<- bool) {
+		for _, name := range names {
+			err := os.RemoveAll(filepath.Join(dir, name))
+			if err != nil {
+				logger.Errorln(err.Error())
+				done <- false
+				return err, done
+			}
 		}
-	}
-	s.Mutex.Unlock()
+		done <- true
+		return nil, done
+	}()
 
-	return nil
+	select {
+	case result := <-done:
+		if result == true {
+			return nil
+		}
+		return err
+
+	case <-ctx.Done():
+		logger.Errorln(ctx.Err())
+		return ctx.Err()
+	}
 }

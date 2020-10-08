@@ -28,6 +28,6 @@ RUN cp /build/bdi-test-service .
 FROM scratch
 
 COPY --from=builder /dist/bdi-test-service /
-#EXPOSE 8081
+EXPOSE 8081
 # Command to run
-CMD ["/bdi-test-service"]
+ENTRYPOINT ["/bdi-test-service"]

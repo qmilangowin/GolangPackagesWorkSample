@@ -3,11 +3,14 @@ package handlers
 
 import (
 	"bdi-test-service/config"
+	logger "bdi-test-service/logging"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -51,7 +54,6 @@ func (s *Server) Initialize() {
 		dataset := Dataset
 		configuration := ConfigurationInfo{SourceFolder: sourcefolder, DatasetName: dataset}
 		configurations["default"] = configuration
-		log = config.Logger()
 
 	})
 }
@@ -114,8 +116,7 @@ func (s *Server) CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Requ
 	reqBody, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
-
-		log.Errorlog.Println(w, "Cannot Create Configuration")
+		logger.Errorln(w, "Cannot Create Configuration")
 		return
 	}
 
@@ -123,7 +124,7 @@ func (s *Server) CreateNewConfigurationRoute(w http.ResponseWriter, r *http.Requ
 	configurations[configIDStr] = configuration
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(configurations)
-	log.Infolog.Printf("Configuration %d created ", configID)
+	logger.Info("Configuration %d created ", configID)
 
 }
 
@@ -143,11 +144,10 @@ func (s *Server) DeleteConfigurationRoute(w http.ResponseWriter, r *http.Request
 			delete(configurations, configID)
 			w.WriteHeader(http.StatusAccepted)
 			json.NewEncoder(w).Encode(configurations)
-			log.Infolog.Printf("Configuration %s deleted ", configID)
+			logger.Info("Configuration %s deleted ", configID)
 
 		} else {
-			http.Error(w, "Bad Request - Config not found", http.StatusBadRequest)
-			log.Infolog.Printf("Configuration %s not found ", configID)
+			logger.Info("Configuration %s not found ", configID)
 		}
 
 	}
@@ -158,12 +158,16 @@ func (s *Server) DeleteConfigurationRoute(w http.ResponseWriter, r *http.Request
 func (s *Server) RemoveIndexedFiles(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
-	err := s.RemoveFiles(Outputpath)
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 50*time.Second)
+	defer cancel()
+	err := s.RemoveFiles(ctx, Outputpath)
 	if err != nil {
-		http.Error(w, "Bad Request - Could not delete output folder", http.StatusBadRequest)
+		http.Error(w, "Bad Request - Could not delete output folder or request timed out", http.StatusBadRequest)
 	} else {
 		w.WriteHeader(http.StatusAccepted)
-		log.Infolog.Println("Output Folder Purged")
+		w.Write([]byte(`Output Folder Purged`))
+		logger.Info("Output Folder Purged")
 	}
 }
 
@@ -177,13 +181,13 @@ func (s *Server) SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
 	if value, ok := configurations[configID]; ok {
 		sourceFolder = value.SourceFolder
 	} else {
-		log.Infolog.Println("Could not read configuration")
+		logger.Infoln("Could not read configuration")
 	}
 
 	var fileList []FileNameInfo
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Errorlog.Printf("Error reading body: %v", err)
+		logger.Error("Error reading body: %v", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -191,7 +195,7 @@ func (s *Server) SetFileNamesRoute(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &fileList)
 
 	if err != nil {
-		log.Errorlog.Printf("Cannot unmarshal")
+		logger.Error("Cannot unmarshal")
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
