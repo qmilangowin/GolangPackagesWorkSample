@@ -53,7 +53,7 @@ func (s *Server) RenameFiles(files FileNameInfo, c chan FileNameInfo) {
 //RemoveFiles ... removes indexed files from default output directory
 func (s *Server) RemoveFiles(ctx context.Context, dir string) error {
 
-	done := make(chan bool)
+	done := make(chan bool, 1)
 
 	d, err := os.Open(dir)
 	if err != nil {
@@ -67,17 +67,15 @@ func (s *Server) RemoveFiles(ctx context.Context, dir string) error {
 		logger.Errorln(err.Error())
 		return err
 	}
-	go func() (error, chan<- bool) {
+	go func() {
 		for _, name := range names {
 			err := os.RemoveAll(filepath.Join(dir, name))
 			if err != nil {
 				logger.Errorln(err.Error())
 				done <- false
-				return err, done
 			}
 		}
 		done <- true
-		return nil, done
 	}()
 
 	select {

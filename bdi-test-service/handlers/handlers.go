@@ -162,8 +162,10 @@ func (s *Server) RemoveIndexedFiles(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 50*time.Second)
 	defer cancel()
 	err := s.RemoveFiles(ctx, Outputpath)
-	if err != nil {
-		http.Error(w, "Bad Request - Could not delete output folder or request timed out", http.StatusBadRequest)
+	if err == context.DeadlineExceeded {
+		http.Error(w, "context deadline exceeded, request timeout", http.StatusRequestTimeout)
+	} else if err != nil {
+		http.Error(w, "Bad Request - Could not delete output folder", http.StatusBadRequest)
 	} else {
 		w.WriteHeader(http.StatusAccepted)
 		w.Write([]byte(`Output Folder Purged`))
