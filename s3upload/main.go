@@ -79,9 +79,6 @@ func main() {
 
 }
 
-//run will run the different command-line flags. Additionally, since it takes a writer interface, anything that
-//implements this interface can be passed. As an example, we can pass the output to either std.out or to a file or to a buffer
-//as we do in the tests.
 func (app *Application) run(w io.Writer) error {
 
 	var err error
@@ -135,9 +132,6 @@ func (app *Application) s3UploadDir(w io.Writer) error {
 		return err
 	}
 
-	//creates a new uploader of type *Uploader. The uploader runs concurrently and splits the files
-	//into smaller parts. LeavePartsOnError is set to false so failed uploads are not left in s3.
-	//Refer to the Golang SDK for AWS S3.
 	uploader := s3manager.NewUploader(session, func(u *s3manager.Uploader) {
 		u.PartSize = 100 * 1024 * 1024
 		u.LeavePartsOnError = false
@@ -146,14 +140,11 @@ func (app *Application) s3UploadDir(w io.Writer) error {
 
 	fileList := []string{}
 
-	//Walk the root of the directory tree and adds the path to fileList as an element of type string
 	filepath.Walk(app.dir, func(path string, f os.FileInfo, err error) error {
 		fileList = append(fileList, path)
 		return nil
 	})
 
-	//pass the absolute path of each file to s3UploadFile, additionall pass the S3 Session,
-	//writer and uploader interface to trigger the Upload function.
 	for _, pathOfFile := range fileList[1:] {
 		if err := app.s3UploadFile(pathOfFile, session, w, uploader); err != nil {
 			return err

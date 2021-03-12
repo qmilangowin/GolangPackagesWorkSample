@@ -33,9 +33,6 @@ func (r *ProgressReader) Read(p []byte) (int, error) {
 }
 
 func (r *ProgressReader) ReadAt(p []byte, off int64) (int, error) {
-	//https://github.com/aws/aws-sdk-go/issues/2468
-	//https://github.com/aws/aws-sdk-go/pull/2456
-	//https://github.com/aws/aws-sdk-go/commit/eb7121dfde9200b61572aeafef0eaa0cfb2a7652
 
 	n, err := r.Fp.ReadAt(p, off)
 	c := make(chan int64)
