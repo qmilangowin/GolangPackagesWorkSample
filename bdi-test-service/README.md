@@ -1,6 +1,6 @@
 # Oxpecker Tools
 
-Repo for test tools used for the Oxpecker/BDI project
+Repo for test tools used for the Oxpecker/Big Data Indexing project
 
 ## BDI Test Service
 
