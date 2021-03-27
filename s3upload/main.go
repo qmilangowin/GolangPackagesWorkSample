@@ -210,6 +210,10 @@ func (app *Application) s3UploadFile(pathOfFile string, session *session.Session
 //in the bucket
 func (app *Application) s3ListBucketObjects(w io.Writer) error {
 	session, err := app.s3Session()
+	if err != nil {
+		fmt.Fprintln(w, "Error getting file size: ", err)
+		return err
+	}
 	svc := s3.New(session)
 
 	input := &s3.ListObjectsV2Input{
