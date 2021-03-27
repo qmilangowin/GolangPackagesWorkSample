@@ -33,7 +33,6 @@ func (r *ProgressReader) Read(p []byte) (int, error) {
 }
 
 func (r *ProgressReader) ReadAt(p []byte, off int64) (int, error) {
-
 	n, err := r.Fp.ReadAt(p, off)
 	c := make(chan int64)
 	var read int64
