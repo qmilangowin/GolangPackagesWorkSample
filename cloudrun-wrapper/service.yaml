@@ -1,0 +1,35 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  annotations:
+    client.knative.dev/user-image: gcr.io/cv-testing-team/system-test
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+  labels:
+    cloud.googleapis.com/location: europe-west1
+  name: system-test
+  namespace: '195447966281'
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '100'
+        client.knative.dev/user-image: gcr.io/cv-testing-team/system-test
+        run.googleapis.com/client-name: cloud-console
+      name: system-test-00003-jeg
+    spec:
+      containerConcurrency: 1
+      containers:
+      - image: gcr.io/cv-testing-team/system-test
+        ports:
+        - containerPort: 8080
+          name: http1
+        resources:
+          limits:
+            cpu: 4000m
+            memory: 8192Mi
+      serviceAccountName: 195447966281-compute@developer.gserviceaccount.com
+      timeoutSeconds: 3600
+  traffic:
+  - latestRevision: true
+    percent: 100
